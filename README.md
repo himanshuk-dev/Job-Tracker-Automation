@@ -1,8 +1,9 @@
 # Job Tracker Automation
 
 Automation tool to export jobs saved on Springboard Job Tracker to Google Sheets.
+![Job-Tracker-Automation](https://github.com/coderhimanshu1/Job-Tracker-Automation/assets/87880250/565f4ce7-c17b-4dd3-bf49-8b9521899e92)
 
-![Job-Tracker-Automation](https://github.com/coderhimanshu1/Job-Tracker-Automation/assets/87880250/d976620c-239f-4100-b07c-dae3f27af920)
+
 
 ## Description
 
