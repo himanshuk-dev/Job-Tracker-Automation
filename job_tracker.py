@@ -33,7 +33,7 @@ password_elem.send_keys(password)
 password_elem.send_keys(Keys.RETURN)
 
 # Wait for login to complete - NOTE:edit this time to wait to enter verification capcha
-time.sleep(30)
+time.sleep(25)
 
 # Navigate to the job search page
 job_search_url = "https://www.springboard.com/workshops/software-engineering-career-track/learn#/job-search/application"
@@ -82,13 +82,57 @@ try:
         next_button.click()
         time.sleep(5)  # Wait for the next page to load
 
+    # Navigate to the contacts page
+    contacts_url = "https://www.springboard.com/workshops/software-engineering-career-track/learn#/job-search/networking"
+    driver.get(contacts_url)
+
+    time.sleep(5)
+
+    contacts = []
+    
+    # Start loop for pagination for contacts
+    while True:
+        # Use Selenium to get the page source
+        contacts_page_source = driver.page_source
+        contacts_soup = BeautifulSoup(contacts_page_source, 'html.parser')
+
+        # Get all contact elements
+        contact_elements = contacts_soup.find_all('div', class_='networking-activity-item')
+
+        for contact_element in contact_elements:
+            contact_name = contact_element.find('a', class_='contact-name-link').text.strip()
+            role = contact_element.find('span', class_='activity-role').text.strip()
+            company = contact_element.find('img', class_='company-icon-image').find_next_sibling().text.strip()
+            calendar_icon_elem = contact_element.find('img', alt='calendar icon')
+            if calendar_icon_elem:
+                source = calendar_icon_elem.find_next_sibling(text=True).strip()
+            last_updated = contact_element.find('img', alt='calendar icon').find_next_sibling().text.strip()
+            next_steps = contact_element.find('div', class_='activity-desc').text.strip()
+
+            contact = [contact_name, role, company, source, last_updated, next_steps]
+            contacts.append(contact)
+
+        # Check if there's a 'Next' button for contacts and if it's not disabled
+        try:
+            contacts_next_button = driver.find_element(By.CSS_SELECTOR, ".pagination-next")
+            if "disabled" in contacts_next_button.get_attribute("class"):
+                break  # Exit the loop if 'Next' button is disabled
+
+            # Click the 'Next' button to navigate to the next page for contacts
+            contacts_next_button.click()
+            time.sleep(5)  # Wait for the next page to load
+
+        except Exception as e:
+            print("Error with contacts pagination:", e)
+            break  # Exit the loop if there's an error
 
     # Export to Google Sheets
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
     client = gspread.authorize(creds)
 
-    sheet = client.open("Job-Tracker-Automated").sheet1
+    # For jobs
+    sheet = client.open("Job-Tracker-Automated").worksheet("jobs")
 
     # Check if headers already exist or insert them
     headers = ["Job Title", "Company Name", "Location", "Last Updated", "Job Status"]
@@ -132,6 +176,43 @@ try:
             # Append the new job to the Google Sheet
             sheet.append_row(job)
             print("Script ended")
+        
+        # For Contacts
+        contacts_sheet = client.open("Job-Tracker-Automated").worksheet("contacts")
+
+        # Headers for the contacts sheet
+        contact_headers = ["Contact Name", "Role", "Company", "Source", "Last Updated", "Next Steps"]
+        existing_contact_headers = contacts_sheet.row_values(1)
+        
+        if existing_contact_headers != contact_headers:
+            contacts_sheet.insert_row(contact_headers, 1)
+
+        # Fetch all existing rows from the contacts sheet
+        existing_contact_entries = contacts_sheet.get_all_values()[1:]  # Exclude headers
+
+        contact_name_index = contact_headers.index('Contact Name')
+        role_index = contact_headers.index('Role')
+        company_index = contact_headers.index('Company')
+
+        for contact in contacts:
+            # Variables to check if contact already exists
+            contact_exists = False
+            
+            # Extract the contact details for easier comparison
+            contact_name, role, company, _, _, _ = contact
+
+            for index, entry in enumerate(existing_contact_entries):
+                # Check if contact name, role, and company match
+                if entry[contact_name_index] == contact_name and entry[role_index] == role and entry[company_index] == company:
+                    contact_exists = True
+                    break
+
+            if not contact_exists:
+                # Append the new contact to the Google Sheet
+                contacts_sheet.append_row(contact)
+
+    print("Contacts added to Google Sheets")
+    
 
 except Exception as e:
     print("Error:", e)
