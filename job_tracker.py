@@ -82,11 +82,11 @@ try:
         next_button.click()
         time.sleep(5)  # Wait for the next page to load
 
+    
     # Navigate to the contacts page
     contacts_url = "https://www.springboard.com/workshops/software-engineering-career-track/learn#/job-search/networking"
     driver.get(contacts_url)
-
-    time.sleep(5)
+    time.sleep(10)
 
     contacts = []
     
@@ -97,17 +97,32 @@ try:
         contacts_soup = BeautifulSoup(contacts_page_source, 'html.parser')
 
         # Get all contact elements
-        contact_elements = contacts_soup.find_all('div', class_='networking-activity-item')
+        contact_elements = contacts_soup.find_all('div', class_='info-group ng-star-inserted')
 
         for contact_element in contact_elements:
-            contact_name = contact_element.find('a', class_='contact-name-link').text.strip()
-            role = contact_element.find('span', class_='activity-role').text.strip()
-            company = contact_element.find('img', class_='company-icon-image').find_next_sibling().text.strip()
-            calendar_icon_elem = contact_element.find('img', alt='calendar icon')
-            if calendar_icon_elem:
-                source = calendar_icon_elem.find_next_sibling(text=True).strip()
-            last_updated = contact_element.find('img', alt='calendar icon').find_next_sibling().text.strip()
-            next_steps = contact_element.find('div', class_='activity-desc').text.strip()
+            # Extracting contact name
+            contact_name_element = contact_element.find('a', class_='primary-anchor')
+            contact_name = contact_name_element.text.strip() if contact_name_element else ''
+
+            # Extracting role
+            role_element = contact_element.find('span', class_='activity-role')
+            role = role_element.text.strip() if role_element else ''
+
+            # Extracting company
+            company_element = contact_element.find('img', alt='company icon')
+            company = company_element.next_sibling.strip() if company_element else ''
+
+            # Extracting source (assuming it's "Outreach via LinkedIn" as per given HTML)
+            source_element = contact_element.find('img', alt='networking type icon')
+            source = source_element.next_sibling.strip() if source_element else ''
+
+            # Extracting last updated date
+            last_updated_element = contact_element.find('img', alt='calendar icon')
+            last_updated = last_updated_element.next_sibling.strip() if last_updated_element else ''
+
+            # Extracting next steps (assuming it's "next: informational interview" as per given HTML)
+            next_steps_element = contact_element.find('div', class_='activity-desc')
+            next_steps = next_steps_element.text.strip() if next_steps_element else ''
 
             contact = [contact_name, role, company, source, last_updated, next_steps]
             contacts.append(contact)
@@ -130,6 +145,7 @@ try:
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
     client = gspread.authorize(creds)
+    
 
     # For jobs
     sheet = client.open("Job-Tracker-Automated").worksheet("jobs")
@@ -175,47 +191,56 @@ try:
         else:
             # Append the new job to the Google Sheet
             sheet.append_row(job)
-            print("Script ended")
+    print("Jobs added to Google Sheets")
         
-        # For Contacts
-        contacts_sheet = client.open("Job-Tracker-Automated").worksheet("contacts")
+    # For Contacts
+    contacts_sheet = client.open("Job-Tracker-Automated").worksheet("contacts")
 
-        # Headers for the contacts sheet
-        contact_headers = ["Contact Name", "Role", "Company", "Source", "Last Updated", "Next Steps"]
-        existing_contact_headers = contacts_sheet.row_values(1)
+    # Headers for the contacts sheet
+    contact_headers = ["Contact Name", "Role", "Company", "Source", "Last Updated", "Next Steps"]
+    existing_contact_headers = contacts_sheet.row_values(1)
+    
+    if existing_contact_headers != contact_headers:
+        contacts_sheet.insert_row(contact_headers, 1)
+
+    # Fetch all existing rows from the contacts sheet
+    existing_contact_entries = contacts_sheet.get_all_values()[1:]  # Exclude headers
+
+    contact_name_index = contact_headers.index('Contact Name')
+    role_index = contact_headers.index('Role')
+    company_index = contact_headers.index('Company')
+    source_index = contact_headers.index('Source')
+
+    for contact in contacts:
+        # Variable to track the position of the existing contact
+        existing_contact_position = -1
         
-        if existing_contact_headers != contact_headers:
-            contacts_sheet.insert_row(contact_headers, 1)
+        # Extract the contact details for easier comparison
+        contact_name, _, _, source, _, _ = contact
 
-        # Fetch all existing rows from the contacts sheet
-        existing_contact_entries = contacts_sheet.get_all_values()[1:]  # Exclude headers
+        for index, entry in enumerate(existing_contact_entries):
+            # Check if contact name matches
+            if entry[contact_name_index] == contact_name:
+                existing_contact_position = index
+                break
 
-        contact_name_index = contact_headers.index('Contact Name')
-        role_index = contact_headers.index('Role')
-        company_index = contact_headers.index('Company')
-
-        for contact in contacts:
-            # Variables to check if contact already exists
-            contact_exists = False
-            
-            # Extract the contact details for easier comparison
-            contact_name, role, company, _, _, _ = contact
-
-            for index, entry in enumerate(existing_contact_entries):
-                # Check if contact name, role, and company match
-                if entry[contact_name_index] == contact_name and entry[role_index] == role and entry[company_index] == company:
-                    contact_exists = True
-                    break
-
-            if not contact_exists:
-                # Append the new contact to the Google Sheet
-                contacts_sheet.append_row(contact)
+        if existing_contact_position != -1:  # Contact exists
+            # Compare the sources
+            if entry[source_index] != source:
+                # Update the source in the Google Sheet
+                contacts_sheet.update_cell(existing_contact_position + 1, source_index + 1, source)  # +1 to adjust for 0-based index
+        else:
+            # Append the new contact to the Google Sheet
+            contacts_sheet.append_row(contact)
 
     print("Contacts added to Google Sheets")
-    
 
+    print("Script ended")
 except Exception as e:
-    print("Error:", e)
+    print(f"Error occurred: {e}")
+    import traceback
+    print(traceback.format_exc())
+
 
 # Close the driver
 driver.quit()
