@@ -1,26 +1,36 @@
 # Job Tracker Automation
 
-Automation tool to export jobs saved on Springboard Job Tracker to Google Sheets.
+An automation tool to export jobs and contacts saved on Springboard Job Tracker to Google Sheets.
 ![Job-Tracker-Automation](https://github.com/coderhimanshu1/Job-Tracker-Automation/assets/87880250/565f4ce7-c17b-4dd3-bf49-8b9521899e92)
 
 ## Demo
 
-https://github.com/coderhimanshu1/Job-Tracker-Automation/assets/87880250/4928509e-ab3f-4d74-90d6-4686b9956ae7
+
+https://github.com/coderhimanshu1/Job-Tracker-Automation/assets/87880250/57404966-238d-4c24-ac21-e82fd8c3143b
+
 
 
 ## Description
 
-The `job_tracker.py` script uses Selenium to log into the Springboard platform and scrape job application details. The details are then stored in a Google Sheet, providing an organized view of your job applications.
+The `job_tracker.py` script uses Selenium to log into the Springboard platform and scrape job applications and contact details. These details are then stored in a Google Sheet, providing an organized view of your job applications and professional contacts.
+
 
 ## Features
 
 - Automated login to Springboard
+  - _Note: There can be cases where you are required to enter a security captcha if you end up running the script multiple times. So please ensure to follow all the steps before running the script._
 - Scraping of job details including:
   - Job Title
   - Company Name
   - Location
   - Last Updated
   - Job Status
+- Scraping of contact details including:
+  - Contact Name
+  - Role
+  - Company
+  - Last Updated
+  - Next steps (description)
 - Export job details to Google Sheets
 
 ## Setup & Installation
@@ -49,7 +59,9 @@ The `job_tracker.py` script uses Selenium to log into the Springboard platform a
 
 4. Create a Google Sheet and name it "Job-Tracker-Automated".
 
-5. Set up your .env file with your Springboard credentials:
+5. MAke sure two have two worksheets named: "jobs" and "contacts".
+
+6. Set up your .env file with your Springboard credentials:
 
 ```
 SPRINGBOARD_EMAIL=your_email@example.com
@@ -73,4 +85,5 @@ MIT
 
 ### Disclaimer
 
-Use this tool responsibly and ensure you have permission to scrape and automate tasks on the platforms you are interacting with.
+This tool is specifically designed for Springboard students to aid in managing their job search and networking endeavors. Use this tool responsibly and ensure you have permission to scrape and automate tasks on the platforms you are interacting with. Unauthorized or improper use of this tool outside the context of Springboard may violate terms of service or user agreements. Always adhere to the platform's terms and conditions.
+
