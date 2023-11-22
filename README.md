@@ -5,15 +5,11 @@ An automation tool to export jobs and contacts saved on Springboard Job Tracker 
 
 ## Demo
 
-
 https://github.com/coderhimanshu1/Job-Tracker-Automation/assets/87880250/57404966-238d-4c24-ac21-e82fd8c3143b
-
-
 
 ## Description
 
 The `job_tracker.py` script uses Selenium to log into the Springboard platform and scrape job applications and contact details. These details are then stored in a Google Sheet, providing an organized view of your job applications and professional contacts.
-
 
 ## Features
 
@@ -75,9 +71,10 @@ Run the script:
 
 _After execution, you'll find the scraped job details in the "Job-Tracker-Automated" Google Sheet._
 
-### Contributions
+## Development
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+See [`.github/CONTRIBUTING.md`](./.github/CONTRIBUTING.md), then [`.github/DEVELOPMENT.md`](./.github/DEVELOPMENT.md).
+Thanks!
 
 ### License
 
@@ -86,4 +83,3 @@ MIT
 ### Disclaimer
 
 This tool is specifically designed for Springboard students to aid in managing their job search and networking endeavors. Use this tool responsibly and ensure you have permission to scrape and automate tasks on the platforms you are interacting with. Unauthorized or improper use of this tool outside the context of Springboard may violate terms of service or user agreements. Always adhere to the platform's terms and conditions.
-
