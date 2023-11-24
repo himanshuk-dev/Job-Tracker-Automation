@@ -1,11 +1,23 @@
+import logging
 import os
+import sys
 
+from logging import Logger
 from typing import Optional, Tuple
 
 from dotenv import load_dotenv
 
 from utils.constants import Constants
 from utils.errors import EnvironmentNotSetError
+
+
+logging.basicConfig(
+    format="%(levelname)s - %(asctime)s: %(message)s ",
+    level=logging.INFO,
+    stream=sys.stdout,
+)
+
+log: Logger = logging.getLogger(__name__)
 
 
 def get_springboard_credentials_from_env() -> Tuple[str, str]:
@@ -16,6 +28,7 @@ def get_springboard_credentials_from_env() -> Tuple[str, str]:
     @Raises: EnvironmentNotSetError if either the username or password is not set.
     @Return: A tuple of strings containing the Springboard username and password.
     """
+    log.info("Getting Springboard credentials from .env file.")
     load_dotenv()
     username: Optional[str] = os.getenv(Constants.SPRINGBOARD_EMAIL)
     password: Optional[str] = os.getenv(Constants.SPRINGBOARD_PASSWORD)
@@ -24,7 +37,15 @@ def get_springboard_credentials_from_env() -> Tuple[str, str]:
         cred is None or cred == Constants.EMPTY_STRING for cred in {username, password}
     ):
         raise EnvironmentNotSetError(
-            "Please set your Springboard username and password in the .env file."
+            "One or more of SPRINGBOARD_EMAIL or SPRINGBOARD_PASSWORD is not set in the .env file."
+            f"The provided values are: Username: {username}, Password: {password}"
         )
+
+    # Note: Logging this info here should be ok, because this will
+    # be unique to each user running it on their local machine.
+    log.info(
+        "Successfully retrieved Springboard credentials from .env file. "
+        f"Username: {username}, Password: {password}",
+    )
 
     return username, password

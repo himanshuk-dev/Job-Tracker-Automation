@@ -61,7 +61,8 @@ def test_get_springboard_creds_from_env_raises_error() -> None:
             get_springboard_credentials_from_env()
 
     assert str(e.value) == (
-        "Please set your Springboard username and password in the .env file."
+        "One or more of SPRINGBOARD_EMAIL or SPRINGBOARD_PASSWORD is not set in the .env file."
+        "The provided values are: Username: test_username, Password: "
     )
 
     assert e.type == EnvironmentNotSetError
