@@ -10,8 +10,9 @@ from selenium.webdriver.common.keys import Keys
 
 from utils.constants import Constants
 from utils.helpers import get_springboard_credentials_from_env
+from utils.type_aliases import SpringboardCredentials
 
-email, password = get_springboard_credentials_from_env()
+springboard_credentials: SpringboardCredentials = get_springboard_credentials_from_env()
 
 
 # Set up the driver
@@ -23,12 +24,12 @@ driver.get(login_url)
 
 # Find the email and password input elements and fill them in
 email_elem = driver.find_element(By.CSS_SELECTOR, 'input[formControlName="login"]')
-email_elem.send_keys(email)
+email_elem.send_keys(springboard_credentials.email)
 
 password_elem = driver.find_element(
     By.CSS_SELECTOR, 'input[formControlName="password"]'
 )
-password_elem.send_keys(password)
+password_elem.send_keys(springboard_credentials.password)
 
 # Submit the form
 password_elem.send_keys(Keys.RETURN)

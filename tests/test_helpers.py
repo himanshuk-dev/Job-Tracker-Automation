@@ -7,6 +7,7 @@ import pytest
 
 from utils.errors import EnvironmentNotSetError
 from utils.helpers import get_springboard_credentials_from_env
+from utils.type_aliases import SpringboardCredentials
 
 
 @contextmanager
@@ -34,25 +35,26 @@ def test_get_springboard_creds_from_env() -> None:
     username and password when they are set in the .env file.
     """
     mock_env: Dict[str, str] = {
-        "SPRINGBOARD_EMAIL": "test_username",
+        "SPRINGBOARD_EMAIL": "test_email",
         "SPRINGBOARD_PASSWORD": "test_password",
     }
 
     with mock_env_vars(**mock_env):
-        username, password = get_springboard_credentials_from_env()
-        assert username == "test_username"
-        assert password == "test_password"
+        credentials = get_springboard_credentials_from_env()
+        assert credentials.email == "test_email"
+        assert credentials.password == "test_password"
+        assert isinstance(credentials, SpringboardCredentials)
 
 
 def test_get_springboard_creds_from_env_raises_error() -> None:
     """
     Tests that the get_springboard_credentials_from_env function raises an
-    EnvironmentNotSetError when the username or password is not set in the .env file.
+    EnvironmentNotSetError when the email or password is not set in the .env file.
     """
 
     # Override the value in the .env file for SPRINGBOARD_PASSWORD
     mock_env: Dict[str, str] = {
-        "SPRINGBOARD_EMAIL": "test_username",
+        "SPRINGBOARD_EMAIL": "test_email",
         "SPRINGBOARD_PASSWORD": "",
     }
 
@@ -62,7 +64,7 @@ def test_get_springboard_creds_from_env_raises_error() -> None:
 
     assert str(e.value) == (
         "One or more of SPRINGBOARD_EMAIL or SPRINGBOARD_PASSWORD is not set in the .env file."
-        "The provided values are: Username: test_username, Password: "
+        "The provided values are: Email: test_email, Password: "
     )
 
     assert e.type == EnvironmentNotSetError
