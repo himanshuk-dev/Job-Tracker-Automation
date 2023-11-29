@@ -64,6 +64,8 @@ SPRINGBOARD_EMAIL=your_email@example.com
 SPRINGBOARD_PASSWORD=your_password
 ```
 
+See a comprehensive setup guide [HERE](setup_guide.md).
+
 ### Usage
 
 Run the script:
